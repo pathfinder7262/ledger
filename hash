@@ -4,4 +4,27 @@
 
 
 
-https://ledger-d0809-default-rtdb.firebaseio.com/
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDO-OUslBbcQX3lmuJs2-vAlp3FTZ3yFEs",
+  authDomain: "ledger-d0809.firebaseapp.com",
+  databaseURL: "https://ledger-d0809-default-rtdb.firebaseio.com",
+  projectId: "ledger-d0809",
+  storageBucket: "ledger-d0809.firebasestorage.app",
+  messagingSenderId: "615941709103",
+  appId: "1:615941709103:web:934109b703b161083595da",
+  measurementId: "G-THGVFSFLXK"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+
