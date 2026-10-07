@@ -1,470 +1,509 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Immutable Shared Ledger</title>
-  <style>
-    :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --success: #16a34a;
-      --warning: #ca8a04;
-      --danger: #dc2626;
-      --radius: 10px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 60px; }
-    header { background: #0f172a; color: white; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { font-size: 1.25rem; font-weight: 700; }
-    .badge-user { background: #334155; padding: 0.35rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; }
-    
-    .container { max-width: 800px; margin: 1.5rem auto; padding: 0 1rem; }
-    .nav-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
-    .tab-btn { background: none; border: none; padding: 0.6rem 1rem; font-size: 0.95rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: var(--radius); }
-    .tab-btn.active { background: var(--primary); color: white; }
-
-    .card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .card h2 { font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
-    
-    .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text); }
-    .form-control { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; }
-    .form-control:focus { outline: none; border-color: var(--primary); ring: 2px var(--primary); }
-    .btn { display: inline-block; width: 100%; padding: 0.75rem; border-radius: 6px; border: none; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-sm { width: auto; padding: 0.4rem 0.75rem; font-size: 0.8rem; }
-    .btn-success { background: var(--success); color: white; }
-    .btn-danger { background: var(--danger); color: white; }
-
-    .entry-card { border-left: 4px solid var(--primary); margin-bottom: 1rem; padding: 1rem 1.25rem; }
-    .entry-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
-    .entry-amount { font-size: 1.25rem; font-weight: 700; color: #047857; }
-    .entry-meta { font-size: 0.8rem; color: var(--text-muted); }
-    .entry-details { margin: 0.5rem 0; font-size: 0.9rem; }
-    .entry-proof { margin-top: 0.75rem; padding: 0.5rem; background: #f1f5f9; border-radius: 6px; font-size: 0.85rem; }
-    .entry-proof img { max-width: 100%; max-height: 200px; border-radius: 4px; margin-top: 0.5rem; display: block; }
-    .hash-badge { font-family: monospace; font-size: 0.7rem; color: #64748b; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; word-break: break-all; margin-top: 0.4rem; display: block; }
-    
-    .status-badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-verified { background: #dcfce7; color: #15803d; }
-    .status-disputed { background: #fee2e2; color: #b91c1c; }
-
-    .validation-box { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed var(--border); }
-    .validation-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .stat-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; }
-    .stat-val { font-size: 1.4rem; font-weight: 700; margin-top: 0.25rem; }
-
-    .chain-indicator { padding: 0.75rem 1rem; border-radius: var(--radius); font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
-    .chain-valid { background: #dcfce7; color: #166534; }
-    .chain-invalid { background: #fee2e2; color: #991b1b; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shared Immutable Ledger</title>
+<script src="`https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js`"></script>
+<script src="`https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js`"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f0f2f5;--card:#fff;--primary:#1e40af;--primary-light:#3b82f6;--danger:#dc2626;--warn:#f59e0b;--success:#16a34a;--text:#1e293b;--text2:#64748b;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+header{background:linear-gradient(135deg,#1e293b,#334155);color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header .top-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+header h1{font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.user-badge{background:rgba(255,255,255,.15);padding:6px 14px;border-radius:20px;font-size:.85rem;display:flex;align-items:center;gap:6px}
+.user-badge .dot{width:8px;height:8px;border-radius:50%;background:#4ade80}
+.nav-tabs{display:flex;gap:4px;margin-top:12px;overflow-x:auto}
+.nav-tab{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);padding:8px 16px;border-radius:8px 8px 0 0;cursor:pointer;font-size:.85rem;font-weight:500;white-space:nowrap;transition:.2s}
+.nav-tab:hover{background:rgba(255,255,255,.15);color:#fff}
+.nav-tab.active{background:var(--bg);color:var(--text)}
+main{max-width:900px;margin:0 auto;padding:16px}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--card);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card h2{font-size:1.1rem;margin-bottom:16px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow);border-left:4px solid var(--primary)}
+.stat-card.success{border-left-color:var(--success)}.stat-card.warn{border-left-color:var(--warn)}.stat-card.danger{border-left-color:var(--danger)}
+.stat-card .stat-value{font-size:1.5rem;font-weight:700}.stat-card .stat-label{font-size:.7rem;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px}
+.form-group .hint{font-size:.75rem;color:var(--text2);margin-top:4px}
+input,select,textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:.95rem;font-family:inherit;transition:.2s;background:#fff}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+textarea{resize:vertical;min-height:80px}
+.required::after{content:" *";color:var(--danger)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;transition:.2s;font-family:inherit}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:#1e3a8a}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#15803d}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}.btn-outline:hover{background:var(--bg)}
+.btn-sm{padding:6px 12px;font-size:.8rem}.btn-block{width:100%}
+.entry-list{display:flex;flex-direction:column;gap:12px}
+.entry-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border-left:4px solid var(--primary)}
+.entry-card.verified{border-left-color:var(--success)}.entry-card.disputed{border-left-color:var(--danger)}.entry-card.pending{border-left-color:var(--warn)}
+.entry-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.entry-number{font-size:.75rem;font-weight:700;color:var(--primary);background:rgba(30,64,175,.08);padding:2px 8px;border-radius:4px}
+.entry-amount{font-size:1.2rem;font-weight:700}
+.entry-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:.8rem;color:var(--text2);margin-bottom:10px}
+.entry-reason{font-size:.9rem;margin-bottom:10px}
+.entry-proof{background:#f8fafc;padding:10px;border-radius:8px;margin-bottom:10px;font-size:.85rem}
+.entry-proof a{color:var(--primary-light);text-decoration:none;word-break:break-all}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:600}
+.badge-pending{background:#fef3c7;color:#92400e}.badge-verified{background:#dcfce7;color:#166534}.badge-disputed{background:#fee2e2;color:#991b1b}
+.validation-section{margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
+.entry-hash{font-size:.7rem;color:var(--text2);margin-top:8px;word-break:break-all;font-family:'Courier New',monospace;background:#f1f5f9;padding:6px 8px;border-radius:4px}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:var(--radius);padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+.modal h3{margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.center-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.auth-card{background:var(--card);border-radius:var(--radius);padding:32px;max-width:440px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.1);text-align:center}
+.auth-card h1{font-size:1.5rem;margin-bottom:8px}
+.auth-card p{color:var(--text2);margin-bottom:24px}
+.auth-card .form-group{text-align:left}
+.user-select-btn{display:block;width:100%;padding:16px;margin-bottom:12px;background:#f8fafc;border:2px solid var(--border);border-radius:var(--radius);font-size:1rem;font-weight:600;cursor:pointer;transition:.2s;text-align:center}
+.user-select-btn:hover{border-color:var(--primary);background:rgba(30,64,175,.04)}
+.pin-input{text-align:center;font-size:1.5rem;letter-spacing:12px;font-weight:700}
+.live-badge{background:#dcfce7;color:#166534;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.live-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#16a34a;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text2)}
+.empty-state .icon{font-size:2.5rem;margin-bottom:12px}
+.chain-banner{padding:12px 16px;border-radius:var(--radius);margin-bottom:16px;font-weight:600;font-size:.9rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.chain-ok{background:#dcfce7;color:#166534}.chain-fail{background:#fee2e2;color:#991b1b}
+.toast{position:fixed;bottom:20px;right:20px;background:#1e293b;color:#fff;padding:12px 20px;border-radius:8px;font-size:.9rem;z-index:300;opacity:0;transform:translateY(10px);transition:.3s;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.toast.show{opacity:1;transform:translateY(0)}
+.logout-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;padding:4px 12px;border-radius:6px;font-size:.8rem;cursor:pointer}
+.logout-btn:hover{background:rgba(255,255,255,.2)}
+.filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-row select{flex:1;min-width:120px}
+@media(max-width:600px){
+  header h1{font-size:1rem}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  main{padding:12px}
+  .card{padding:16px}
+  .entry-header{flex-direction:column}
+  .modal-actions{flex-direction:column}
+  .modal-actions .btn{width:100%}
+}
+</style>
 </head>
 <body>
 
+<div id="configError" class="center-screen" style="display:none">
+  <div class="auth-card">
+    <div style="font-size:2.5rem;margin-bottom:8px">⚠️</div>
+    <h1>Firebase Not Configured</h1>
+    <p>Open <code>index.html</code> in a text editor and replace the <code>firebaseConfig</code> placeholder values with your real Firebase config.</p>
+  </div>
+</div>
+
+<div id="setupScreen" class="center-screen" style="display:none">
+  <div class="auth-card">
+    <div style="font-size:2.5rem;margin-bottom:8px">🛡️</div>
+    <h1>Create Shared Ledger</h1>
+    <p>Enter both users' names and set a 4-digit PIN for each. <strong>This cannot be changed later.</strong></p>
+    <div class="form-group">
+      <label class="required">User 1 — Name</label>
+      <input type="text" id="setupUser1" placeholder="e.g. Chetan">
+    </div>
+    <div class="form-group">
+      <label class="required">User 1 — PIN (4 digits)</label>
+      <input type="password" id="setupPin1" maxlength="4" pattern="\d{4}" placeholder="••••" class="pin-input" inputmode="numeric">
+    </div>
+    <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+    <div class="form-group">
+      <label class="required">User 2 — Name</label>
+      <input type="text" id="setupUser2" placeholder="e.g. Partner name">
+    </div>
+    <div class="form-group">
+      <label class="required">User 2 — PIN (4 digits)</label>
+      <input type="password" id="setupPin2" maxlength="4" pattern="\d{4}" placeholder="••••" class="pin-input" inputmode="numeric">
+    </div>
+    <button class="btn btn-primary btn-block" onclick="completeSetup()" style="margin-top:8px">🔒 Create Ledger</button>
+  </div>
+</div>
+
+<div id="loginScreen" class="center-screen" style="display:none">
+  <div class="auth-card">
+    <div style="font-size:2.5rem;margin-bottom:8px">🛡️</div>
+    <h1>Shared Ledger</h1>
+    <p>Select your name and enter your PIN</p>
+    <button class="user-select-btn" id="loginBtn1" onclick="selectLoginUser('user1')">👤 Loading...</button>
+    <button class="user-select-btn" id="loginBtn2" onclick="selectLoginUser('user2')">👤 Loading...</button>
+    <div id="pinSection" style="display:none;margin-top:16px">
+      <div class="form-group">
+        <label class="required">Enter Your 4-Digit PIN</label>
+        <input type="password" id="loginPin" maxlength="4" pattern="\d{4}" placeholder="••••" class="pin-input" inputmode="numeric">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="verifyPin()">🔓 Unlock</button>
+    </div>
+    <div id="loginError" style="color:var(--danger);font-size:.85rem;margin-top:8px;display:none">Wrong PIN. Try again.</div>
+  </div>
+</div>
+
+<div id="appScreen" style="display:none">
   <header>
-    <h1>🛡️ Immutable Shared Ledger</h1>
-    <div>
-      <span class="badge-user" id="currentUserDisplay">Logged in as: User A</span>
-      <button class="btn btn-sm" style="background:#475569; color:white; margin-left: 0.5rem;" onclick="switchUserPrompt()">Switch User</button>
+    <div class="top-row">
+      <h1>🛡️ Shared Ledger</h1>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="live-badge">LIVE SYNC</span>
+        <div class="user-badge"><span class="dot"></span><span id="currentUserDisplay">—</span></div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
+      <button class="nav-tab" data-tab="add" onclick="switchTab('add')">➕ Add Entry</button>
+      <button class="nav-tab" data-tab="ledger" onclick="switchTab('ledger')">📖 Ledger</button>
+      <button class="nav-tab" data-tab="verify" onclick="switchTab('verify')">🔐 Verify</button>
     </div>
   </header>
-
-  <div class="container">
-    <!-- Audit / Integrity Status -->
-    <div id="integrityBanner" class="chain-indicator chain-valid">
-      <span>🔒 Chain Integrity: 100% Cryptographically Verified (SHA-256)</span>
-      <button class="btn btn-sm" style="background:#0f172a; color:white;" onclick="recheckChainIntegrity()">Re-verify Chain</button>
-    </div>
-
-    <!-- Navigation Tabs -->
-    <div class="nav-tabs">
-      <button class="tab-btn active" onclick="showTab('ledgerTab')">📜 Ledger Records</button>
-      <button class="tab-btn" onclick="showTab('addTab')">➕ Add Entry</button>
-      <button class="tab-btn" onclick="showTab('syncTab')">🔄 Sync Data</button>
-    </div>
-
-    <!-- TAB 1: LEDGER RECORDS -->
-    <div id="ledgerTab">
+  <main>
+    <div id="tab-dashboard" class="screen active">
+      <div id="chainBanner" class="chain-banner chain-ok">
+        <span>🔒 Chain Integrity: Verified</span>
+        <button class="btn btn-sm btn-outline" onclick="runIntegrityCheck()" style="border-color:#166534;color:#166534">Re-verify</button>
+      </div>
       <div class="stats-grid">
-        <div class="stat-card">
-          <div style="font-size:0.8rem; color:var(--text-muted);">Total Spend</div>
-          <div class="stat-val" id="statTotal">₹0.00</div>
-        </div>
-        <div class="stat-card">
-          <div style="font-size:0.8rem; color:var(--text-muted);">Verified Records</div>
-          <div class="stat-val" id="statVerified" style="color:var(--success);">0</div>
-        </div>
-        <div class="stat-card">
-          <div style="font-size:0.8rem; color:var(--text-muted);">Pending Verification</div>
-          <div class="stat-val" id="statPending" style="color:var(--warning);">0</div>
-        </div>
+        <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Entries</div></div>
+        <div class="stat-card"><div class="stat-value" id="statAmount">₹0</div><div class="stat-label">Total Amount</div></div>
+        <div class="stat-card success"><div class="stat-value" id="statVerified">0</div><div class="stat-label">Verified</div></div>
+        <div class="stat-card warn"><div class="stat-value" id="statPending">0</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card danger"><div class="stat-value" id="statDisputed">0</div><div class="stat-label">Disputed</div></div>
       </div>
-
-      <div id="entriesList">
-        <!-- Ledger rows populate here -->
-      </div>
+      <div class="card"><h2>📊 User Breakdown</h2><div id="userBreakdown"></div></div>
+      <div class="card"><h2>📋 Recent Entries</h2><div id="recentEntries"></div></div>
     </div>
 
-    <!-- TAB 2: ADD ENTRY -->
-    <div id="addTab" style="display:none;">
+    <div id="tab-add" class="screen">
       <div class="card">
-        <h2>✍️ Add New Immutable Entry</h2>
-        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
-          ⚠️ <strong>Notice:</strong> Once submitted, this entry <strong>cannot be edited or deleted</strong>. Every detail is cryptographically hashed into the ledger chain.
-        </p>
-
-        <form id="ledgerForm" onsubmit="handleNewEntry(event)">
+        <h2>➕ New Ledger Entry</h2>
+        <p style="color:var(--text2);font-size:.85rem;margin-bottom:16px">⚠️ Entries are <strong>permanent and immutable</strong>. Double-check before submitting.</p>
+        <form id="entryForm" onsubmit="addEntry(event)">
           <div class="form-group">
-            <label>Amount (₹ / $ / etc.) *</label>
-            <input type="number" step="0.01" class="form-control" id="entryAmount" required placeholder="e.g. 2450.00" />
+            <label class="required">Amount (₹)</label>
+            <input type="number" id="entryAmount" step="0.01" min="0.01" placeholder="e.g. 1500.00" required>
           </div>
-
           <div class="form-group">
-            <label>Category / Purpose *</label>
-            <input type="text" class="form-control" id="entryCategory" required placeholder="e.g. Server Hosting, Office Supplies, Travel" />
+            <label class="required">Reason / Description</label>
+            <textarea id="entryReason" placeholder="Clearly describe what this expense was for..." required></textarea>
+            <div class="hint">Be specific — vague entries may be disputed</div>
           </div>
-
           <div class="form-group">
-            <label>Detailed Explanation / Business Need *</label>
-            <textarea class="form-control" id="entryReason" rows="3" required placeholder="Detailed reason why this expense was made and how it was paid..."></textarea>
+            <label class="required">Category</label>
+            <select id="entryCategory" required>
+              <option value="">Select category...</option>
+              <option value="Food & Grocery">🍕 Food & Grocery</option>
+              <option value="Transport">🚗 Transport</option>
+              <option value="Utilities & Bills">💡 Utilities & Bills</option>
+              <option value="Rent & Housing">🏠 Rent & Housing</option>
+              <option value="Medical">🏥 Medical</option>
+              <option value="Shopping">🛒 Shopping</option>
+              <option value="Entertainment">🎬 Entertainment</option>
+              <option value="Education">📚 Education</option>
+              <option value="Loan / Lending">💰 Loan / Lending</option>
+              <option value="Repayment">🔄 Repayment</option>
+              <option value="Other">📦 Other</option>
+            </select>
           </div>
-
           <div class="form-group">
-            <label>Proof Type & Transaction Reference *</label>
-            <input type="text" class="form-control" id="entryRef" required placeholder="e.g. UPI Ref #982347102, Invoice #INV-2024-001, Bank stmt debit date" />
+            <label class="required">Proof Type</label>
+            <select id="entryProofType" required>
+              <option value="">Select proof type...</option>
+              <option value="Receipt Photo">📸 Receipt Photo</option>
+              <option value="Bank Statement">🏦 Bank Statement Screenshot</option>
+              <option value="Invoice">📄 Invoice</option>
+              <option value="UPI/Payment Screenshot">📱 UPI/Payment Screenshot</option>
+              <option value="Bill">🧾 Bill</option>
+              <option value="Other Document">📎 Other Document</option>
+            </select>
           </div>
-
           <div class="form-group">
-            <label>Proof Attachment (Receipt photo / screenshot / bill) *</label>
-            <input type="file" class="form-control" id="entryFile" accept="image/*,application/pdf" required onchange="handleFileUpload(event)" />
-            <small style="color:var(--text-muted);">Images are converted to offline proof directly on your device.</small>
+            <label class="required">Proof Link / URL</label>
+            <input type="url" id="entryProofLink" placeholder="https://drive.google.com... or any image link" required>
+            <div class="hint">Upload receipt to Google Drive / Photos, set "Anyone with link", paste URL here</div>
           </div>
-
-          <button type="submit" class="btn btn-primary" id="submitBtn">🔒 Append to Ledger</button>
+          <div class="form-group">
+            <label class="required">Proof Description</label>
+            <textarea id="entryProofDesc" placeholder="Describe what the proof shows (e.g. 'UPI screenshot showing ₹1500 paid to BigBazaar, txn ref XXXXXXX')" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px">🔒 Submit Permanent Entry</button>
         </form>
       </div>
     </div>
 
-    <!-- TAB 3: SYNC DATA -->
-    <div id="syncTab" style="display:none;">
-      <div class="card">
-        <h2>🔄 Cross-Device Synchronization</h2>
-        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
-          To share data across laptop and mobile, or between both partners without third-party servers, export the sync payload and paste it on the other device.
-        </p>
-
-        <div class="form-group">
-          <label><strong>Step 1:</strong> Export current ledger code to send to your partner</label>
-          <button class="btn btn-sm" style="background:#0284c7; color:white; margin-bottom:0.5rem;" onclick="generateSyncPayload()">📋 Generate & Copy Sync Code</button>
-          <textarea class="form-control" id="syncExportArea" rows="4" readonly placeholder="Click the button above to copy sync data..."></textarea>
-        </div>
-
-        <div class="form-group" style="margin-top:1.5rem;">
-          <label><strong>Step 2:</strong> Paste sync code received from your partner</label>
-          <textarea class="form-control" id="syncImportArea" rows="4" placeholder="Paste the sync code here..."></textarea>
-          <button class="btn btn-success" style="margin-top:0.5rem;" onclick="importSyncPayload()">📥 Merge & Validate Remote Entries</button>
+    <div id="tab-ledger" class="screen">
+      <div class="card" style="padding:12px 16px">
+        <div class="filter-row">
+          <select id="filterStatus" onchange="renderLedger()">
+            <option value="all">All Status</option>
+            <option value="Pending">⏳ Pending</option>
+            <option value="Verified">✅ Verified</option>
+            <option value="Disputed">❌ Disputed</option>
+          </select>
+          <select id="filterUser" onchange="renderLedger()"><option value="all">All Users</option></select>
+          <select id="filterCategory" onchange="renderLedger()"><option value="all">All Categories</option></select>
         </div>
       </div>
+      <div id="ledgerEntries" class="entry-list"></div>
     </div>
 
+    <div id="tab-verify" class="screen">
+      <div class="card">
+        <h2>🔐 Hash Chain Integrity Verification</h2>
+        <p style="color:var(--text2);font-size:.85rem;margin-bottom:16px">Each entry is chained using SHA-256. If anyone tampers with any entry, the chain breaks.</p>
+        <button class="btn btn-primary btn-block" onclick="runIntegrityCheck()" style="margin-bottom:16px">🔍 Run Full Integrity Check</button>
+        <div id="verifyResult"></div>
+      </div>
+      <div class="card">
+        <h2>ℹ️ How It Works</h2>
+        <ul style="font-size:.9rem;color:var(--text2);padding-left:20px;line-height:1.8">
+          <li><strong>Every entry gets a SHA-256 hash</strong> from its content + previous hash</li>
+          <li><strong>Entries are chained</strong> — modifying any past entry breaks all hashes after it</li>
+          <li><strong>Data stored in Firebase cloud</strong> — not in your browser</li>
+          <li><strong>Real-time sync</strong> — both users see updates instantly</li>
+          <li><strong>PIN-protected</strong> — nobody can impersonate you</li>
+          <li><strong>No delete function exists</strong> — entries are permanent</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="validateModal" class="modal-overlay">
+  <div class="modal">
+    <h3>Validate Entry #<span id="valEntryNum"></span></h3>
+    <div id="valEntryDetails" style="font-size:.9rem;margin-bottom:16px"></div>
+    <div class="form-group">
+      <label class="required">Validation Notes</label>
+      <textarea id="valNotes" placeholder="How did you verify? (e.g. 'Checked bank statement — ₹1500 debit confirmed')"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-success" onclick="submitValidation('Verified')">✅ Verify</button>
+      <button class="btn btn-danger" onclick="submitValidation('Disputed')">❌ Dispute</button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    </div>
   </div>
+</div>
 
-  <script>
-    // System Config & State
-    let currentUser = localStorage.getItem('ledger_user') || 'User A';
-    let partnerUser = localStorage.getItem('ledger_partner') || 'User B';
-    let ledger = JSON.parse(localStorage.getItem('ledger_chain') || '[]');
-    let currentUploadedProof = '';
+<div id="toast" class="toast"></div>
 
-    // Initialize
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('currentUserDisplay').innerText = `Logged in as: ${currentUser}`;
-      renderLedger();
-      verifyChain();
-    });
+<script>
+// ╔═══════════════════════════════════════════════════════════════╗
+// ║  🔥 FIREBASE CONFIG — REPLACE THE VALUES BELOW              ║
+// ║  Go to `https://console.firebase.google.com`                   ║
+// ║  Create project → Realtime Database → Web app → Copy config  ║
+// ╚═══════════════════════════════════════════════════════════════╝
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL: "`https://PASTE_YOUR_PROJECT_ID-default-rtdb.firebaseio.com`",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
+};
+// ╔═══════════════════════════════════════════════════════════════╗
+// ║  ⛔ DO NOT EDIT ANYTHING BELOW THIS LINE                     ║
+// ╚═══════════════════════════════════════════════════════════════╝
 
-    function switchUserPrompt() {
-      const name = prompt("Enter your name (e.g. Chetan):", currentUser);
-      if (name && name.trim()) {
-        currentUser = name.trim();
-        localStorage.setItem('ledger_user', currentUser);
-        document.getElementById('currentUserDisplay').innerText = `Logged in as: ${currentUser}`;
-        renderLedger();
-      }
-    }
+let db,ledgerRef,currentUser=null,selectedLoginUser=null,ledgerConfig=null,entries=[];
 
-    function showTab(tabId) {
-      document.getElementById('ledgerTab').style.display = tabId === 'ledgerTab' ? 'block' : 'none';
-      document.getElementById('addTab').style.display = tabId === 'addTab' ? 'block' : 'none';
-      document.getElementById('syncTab').style.display = tabId === 'syncTab' ? 'block' : 'none';
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-    }
+function initApp(){
+  if(firebaseConfig.apiKey==="PASTE_YOUR_API_KEY"){document.getElementById('configError').style.display='flex';return}
+  try{firebase.initializeApp(firebaseConfig);db=firebase.database();ledgerRef=db.ref('sharedLedger');checkLedgerExists()}
+  catch(e){document.getElementById('configError').style.display='flex'}
+}
 
-    // SHA-256 implementation using native browser Web Crypto API
-    async function sha256(str) {
-      const buffer = new TextEncoder().encode(str);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+async function checkLedgerExists(){
+  const snap=await ledgerRef.child('config').once('value');
+  if(snap.exists()){ledgerConfig=snap.val();showLogin()}
+  else{document.getElementById('setupScreen').style.display='flex'}
+  ledgerRef.child('entries').on('value',snapshot=>{
+    const data=snapshot.val();entries=data?Object.values(data):[];
+    entries.sort((a,b)=>a.entryNumber-b.entryNumber);
+    if(currentUser){renderDashboard();renderLedger()}
+  });
+}
 
-    function handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        currentUploadedProof = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
+async function sha256(msg){
+  const buf=new TextEncoder().encode(msg);
+  const hash=await crypto.subtle.digest('SHA-256',buf);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 
-    async function handleNewEntry(e) {
-      e.preventDefault();
-      const amount = parseFloat(document.getElementById('entryAmount').value);
-      const category = document.getElementById('entryCategory').value.trim();
-      const reason = document.getElementById('entryReason').value.trim();
-      const ref = document.getElementById('entryRef').value.trim();
+async function computeEntryHash(e,prev){
+  return await sha256(`${prev}|${e.id}|${e.entryNumber}|${e.timestamp}|${e.addedBy}|${e.amount}|${e.reason}|${e.category}|${e.proofType}|${e.proofLink}|${e.proofDesc}`);
+}
 
-      if (!currentUploadedProof) {
-        alert("Supporting proof image/document is strictly required!");
-        return;
-      }
+async function completeSetup(){
+  const u1=document.getElementById('setupUser1').value.trim(),p1=document.getElementById('setupPin1').value.trim();
+  const u2=document.getElementById('setupUser2').value.trim(),p2=document.getElementById('setupPin2').value.trim();
+  if(!u1||!u2){showToast('Both names required!',true);return}
+  if(!/^\d{4}$/.test(p1)||!/^\d{4}$/.test(p2)){showToast('PIN must be exactly 4 digits!',true);return}
+  if(u1.toLowerCase()===u2.toLowerCase()){showToast('Names must be different!',true);return}
+  const config={user1:{name:u1,pinHash:await sha256(p1)},user2:{name:u2,pinHash:await sha256(p2)},createdAt:new Date().toISOString()};
+  await ledgerRef.child('config').set(config);ledgerConfig=config;
+  document.getElementById('setupScreen').style.display='none';showLogin();
+  showToast('✅ Ledger created! Login with your PIN.');
+}
 
-      const prevHash = ledger.length > 0 ? ledger[ledger.length - 1].hash : "0000000000000000000000000000000000000000000000000000000000000000";
-      const timestamp = new Date().toISOString();
+function showLogin(){
+  document.getElementById('setupScreen').style.display='none';document.getElementById('appScreen').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginBtn1').textContent='👤 '+ledgerConfig.user1.name;
+  document.getElementById('loginBtn2').textContent='👤 '+ledgerConfig.user2.name;
+  document.getElementById('pinSection').style.display='none';document.getElementById('loginError').style.display='none';
+  selectedLoginUser=null;
+}
 
-      // Compute raw data signature
-      const rawBlock = `${prevHash}|${currentUser}|${amount}|${category}|${reason}|${ref}|${timestamp}`;
-      const entryHash = await sha256(rawBlock);
+function selectLoginUser(key){
+  selectedLoginUser=key;document.getElementById('pinSection').style.display='block';
+  document.getElementById('loginPin').value='';document.getElementById('loginPin').focus();
+  document.getElementById('loginError').style.display='none';
+  document.getElementById('loginBtn1').style.borderColor=key==='user1'?'var(--primary)':'var(--border)';
+  document.getElementById('loginBtn2').style.borderColor=key==='user2'?'var(--primary)':'var(--border)';
+}
 
-      const entry = {
-        id: 'TX-' + Date.now(),
-        prevHash: prevHash,
-        hash: entryHash,
-        creator: currentUser,
-        amount: amount,
-        category: category,
-        reason: reason,
-        proofRef: ref,
-        proofData: currentUploadedProof,
-        timestamp: timestamp,
-        validation: {
-          status: 'PENDING', // PENDING | VERIFIED | DISPUTED
-          reviewedBy: null,
-          reviewedAt: null,
-          reviewNotes: null
-        }
-      };
+async function verifyPin(){
+  if(!selectedLoginUser){showToast('Select your name first!',true);return}
+  const pin=document.getElementById('loginPin').value.trim();
+  if(!/^\d{4}$/.test(pin)){showToast('Enter 4-digit PIN',true);return}
+  if(await sha256(pin)===ledgerConfig[selectedLoginUser].pinHash){
+    currentUser=ledgerConfig[selectedLoginUser].name;
+    document.getElementById('loginScreen').style.display='none';showApp();
+  }else{document.getElementById('loginError').style.display='block';document.getElementById('loginPin').value='';document.getElementById('loginPin').focus()}
+}
 
-      ledger.push(entry);
-      localStorage.setItem('ledger_chain', JSON.stringify(ledger));
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement===document.getElementById('loginPin'))verifyPin()});
 
-      // Reset Form
-      document.getElementById('ledgerForm').reset();
-      currentUploadedProof = '';
-      alert("✅ Entry added with cryptographic hash: " + entryHash.substring(0, 16) + "...");
-      showTab('ledgerTab');
-      renderLedger();
-      verifyChain();
-    }
+function logout(){currentUser=null;selectedLoginUser=null;document.getElementById('appScreen').style.display='none';showLogin()}
 
-    async function verifyChain() {
-      let isValid = true;
-      let prevHash = "0000000000000000000000000000000000000000000000000000000000000000";
+function showApp(){
+  document.getElementById('appScreen').style.display='block';
+  document.getElementById('currentUserDisplay').textContent=currentUser;
+  populateFilters();switchTab('dashboard');
+}
 
-      for (let i = 0; i < ledger.length; i++) {
-        const item = ledger[i];
-        if (item.prevHash !== prevHash) {
-          isValid = false;
-          break;
-        }
-        const calculatedRaw = `${item.prevHash}|${item.creator}|${item.amount}|${item.category}|${item.reason}|${item.proofRef}|${item.timestamp}`;
-        const calculatedHash = await sha256(calculatedRaw);
-        if (calculatedHash !== item.hash) {
-          isValid = false;
-          break;
-        }
-        prevHash = item.hash;
-      }
+function switchTab(tab){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  if(tab==='dashboard')renderDashboard();if(tab==='ledger')renderLedger();
+}
 
-      const banner = document.getElementById('integrityBanner');
-      if (isValid) {
-        banner.className = 'chain-indicator chain-valid';
-        banner.innerHTML = `<span>🔒 Chain Integrity: 100% Cryptographically Verified (${ledger.length} blocks unbroken)</span>
-                            <button class="btn btn-sm" style="background:#0f172a; color:white;" onclick="verifyChain()">Re-verify</button>`;
-      } else {
-        banner.className = 'chain-indicator chain-invalid';
-        banner.innerHTML = `<span>🚨 WARNING: Ledger has been tampered with or corrupted!</span>`;
-      }
-      return isValid;
-    }
+async function addEntry(e){
+  e.preventDefault();
+  const amount=parseFloat(document.getElementById('entryAmount').value);
+  const reason=document.getElementById('entryReason').value.trim();
+  const category=document.getElementById('entryCategory').value;
+  const proofType=document.getElementById('entryProofType').value;
+  const proofLink=document.getElementById('entryProofLink').value.trim();
+  const proofDesc=document.getElementById('entryProofDesc').value.trim();
+  if(!amount||!reason||!category||!proofType||!proofLink||!proofDesc){showToast('All fields required!',true);return}
+  const prevHash=entries.length>0?entries[entries.length-1].entryHash:'0'.repeat(64);
+  const entry={id:Date.now().toString(36)+Math.random().toString(36).substr(2,8),entryNumber:entries.length+1,timestamp:new Date().toISOString(),addedBy:currentUser,amount,reason,category,proofType,proofLink,proofDesc,validationStatus:'Pending',validatedBy:null,validationNotes:'',validationTimestamp:null,previousHash:prevHash,entryHash:''};
+  entry.entryHash=await computeEntryHash(entry,prevHash);
+  await ledgerRef.child('entries/'+entries.length).set(entry);
+  document.getElementById('entryForm').reset();
+  showToast('✅ Entry #'+entry.entryNumber+' added to cloud!');switchTab('ledger');
+}
 
-    function recheckChainIntegrity() {
-      verifyChain().then(valid => {
-        if (valid) alert("✅ All transactions verified! No tampering detected.");
-      });
-    }
+async function renderDashboard(){
+  document.getElementById('statTotal').textContent=entries.length;
+  document.getElementById('statAmount').textContent='₹'+entries.reduce((s,e)=>s+e.amount,0).toLocaleString('en-IN');
+  document.getElementById('statVerified').textContent=entries.filter(e=>e.validationStatus==='Verified').length;
+  document.getElementById('statPending').textContent=entries.filter(e=>e.validationStatus==='Pending').length;
+  document.getElementById('statDisputed').textContent=entries.filter(e=>e.validationStatus==='Disputed').length;
+  const bd={};[ledgerConfig.user1.name,ledgerConfig.user2.name].forEach(u=>{bd[u]={count:0,total:0}});
+  entries.forEach(e=>{if(bd[e.addedBy]){bd[e.addedBy].count++;bd[e.addedBy].total+=e.amount}});
+  let h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+  Object.keys(bd).forEach(u=>{h+=`<div style="padding:12px;background:#f8fafc;border-radius:8px;text-align:center"><div style="font-weight:700">${esc(u)}</div><div style="font-size:1.2rem;font-weight:700">₹${bd[u].total.toLocaleString('en-IN')}</div><div style="font-size:.8rem;color:var(--text2)">${bd[u].count} entries</div></div>`});
+  h+='</div>';document.getElementById('userBreakdown').innerHTML=h;
+  const recent=[...entries].reverse().slice(0,5);
+  document.getElementById('recentEntries').innerHTML=recent.length===0?'<div class="empty-state"><div class="icon">📭</div><p>No entries yet.</p></div>':recent.map(e=>renderEntryCard(e,false)).join('');
+  const valid=await checkIntegrity();const banner=document.getElementById('chainBanner');
+  banner.className='chain-banner '+(valid?'chain-ok':'chain-fail');
+  banner.innerHTML=valid?`<span>🔒 Chain: All ${entries.length} blocks verified</span><button class="btn btn-sm btn-outline" onclick="runIntegrityCheck()" style="border-color:#166534;color:#166534">Re-verify</button>`:'<span>🚨 INTEGRITY VIOLATION — Tampered!</span>';
+}
 
-    // Counterparty Validation (Only the other party can validate)
-    function validateEntry(id, newStatus) {
-      const entry = ledger.find(e => e.id === id);
-      if (!entry) return;
+function renderLedger(){
+  const sf=document.getElementById('filterStatus').value,uf=document.getElementById('filterUser').value,cf=document.getElementById('filterCategory').value;
+  let f=[...entries].reverse();
+  if(sf!=='all')f=f.filter(e=>e.validationStatus===sf);
+  if(uf!=='all')f=f.filter(e=>e.addedBy===uf);
+  if(cf!=='all')f=f.filter(e=>e.category===cf);
+  document.getElementById('ledgerEntries').innerHTML=f.length===0?'<div class="empty-state"><div class="icon">📭</div><p>No entries match.</p></div>':f.map(e=>renderEntryCard(e,true)).join('');
+}
 
-      if (entry.creator === currentUser) {
-        alert("❌ Anti-Fraud Rule: You cannot validate your own expense! The other party must verify it.");
-        return;
-      }
+function renderEntryCard(entry,showVal){
+  const sc=entry.validationStatus.toLowerCase(),ts=new Date(entry.timestamp);
+  const d=ts.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}),t=ts.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  const canVal=showVal&&entry.addedBy!==currentUser&&entry.validationStatus==='Pending';
+  let vh='';if(entry.validationStatus!=='Pending'&&entry.validatedBy){vh=`<div class="validation-section"><strong>${entry.validationStatus==='Verified'?'✅':'❌'} ${entry.validationStatus}</strong> by ${esc(entry.validatedBy)}<div style="font-size:.85rem;color:var(--text2)">${esc(entry.validationNotes)}</div>${entry.validationTimestamp?`<div style="font-size:.75rem;color:var(--text2)">${new Date(entry.validationTimestamp).toLocaleString('en-IN')}</div>`:''}</div>`}
+  return `<div class="entry-card ${sc}"><div class="entry-header"><div><span class="entry-number">#${entry.entryNumber}</span> <span class="badge badge-${sc}">${entry.validationStatus}</span></div><div class="entry-amount">₹${entry.amount.toLocaleString('en-IN')}</div></div><div class="entry-meta"><span>👤 ${esc(entry.addedBy)}</span><span>📅 ${d} ${t}</span><span>🏷️ ${esc(entry.category)}</span></div><div class="entry-reason">${esc(entry.reason)}</div><div class="entry-proof"><strong>${esc(entry.proofType)}:</strong> <a href="${esc(entry.proofLink)}" target="_blank">${esc(entry.proofLink)}</a><div style="margin-top:4px;color:var(--text2)">${esc(entry.proofDesc)}</div></div>${canVal?`<button class="btn btn-outline btn-sm" onclick="openValidation(${entries.indexOf(entry)})">🔍 Validate</button>`:''}${vh}<div class="entry-hash">🔗 ${entry.entryHash}</div></div>`;
+}
 
-      const notes = prompt(`Enter validation reason (e.g. "Matched against bank debit on ${new Date().toLocaleDateString()}"):`);
-      if (!notes) return;
+function populateFilters(){
+  const uf=document.getElementById('filterUser');uf.innerHTML='<option value="all">All Users</option>';
+  [ledgerConfig.user1.name,ledgerConfig.user2.name].forEach(u=>{uf.innerHTML+=`<option value="${esc(u)}">${esc(u)}</option>`});
+  const cf=document.getElementById('filterCategory'),cats=[...new Set(entries.map(e=>e.category))];
+  cf.innerHTML='<option value="all">All Categories</option>';cats.forEach(c=>{cf.innerHTML+=`<option value="${esc(c)}">${esc(c)}</option>`});
+}
 
-      entry.validation = {
-        status: newStatus,
-        reviewedBy: currentUser,
-        reviewedAt: new Date().toISOString(),
-        reviewNotes: notes
-      };
+let currentValIndex=null;
+function openValidation(idx){
+  const e=entries[idx];if(!e)return;currentValIndex=idx;
+  document.getElementById('valEntryNum').textContent=e.entryNumber;
+  document.getElementById('valEntryDetails').innerHTML=`<p><strong>Amount:</strong> ₹${e.amount.toLocaleString('en-IN')}</p><p><strong>By:</strong> ${esc(e.addedBy)} on ${new Date(e.timestamp).toLocaleString('en-IN')}</p><p><strong>Reason:</strong> ${esc(e.reason)}</p><p><strong>Proof:</strong> <a href="${esc(e.proofLink)}" target="_blank">${esc(e.proofType)}</a> — ${esc(e.proofDesc)}</p>`;
+  document.getElementById('valNotes').value='';document.getElementById('validateModal').classList.add('show');
+}
+function closeModal(){document.getElementById('validateModal').classList.remove('show');currentValIndex=null}
 
-      localStorage.setItem('ledger_chain', JSON.stringify(ledger));
-      renderLedger();
-    }
+async function submitValidation(status){
+  const notes=document.getElementById('valNotes').value.trim();
+  if(!notes){showToast('Notes required!',true);return}
+  await ledgerRef.child(`entries/${currentValIndex}/validationStatus`).set(status);
+  await ledgerRef.child(`entries/${currentValIndex}/validatedBy`).set(currentUser);
+  await ledgerRef.child(`entries/${currentValIndex}/validationNotes`).set(notes);
+  await ledgerRef.child(`entries/${currentValIndex}/validationTimestamp`).set(new Date().toISOString());
+  closeModal();showToast(`Entry marked as ${status}!`);
+}
 
-    function renderLedger() {
-      const container = document.getElementById('entriesList');
-      container.innerHTML = '';
+async function checkIntegrity(){
+  if(entries.length===0)return true;
+  for(let i=0;i<entries.length;i++){
+    const e=entries[i],prev=i===0?'0'.repeat(64):entries[i-1].entryHash;
+    if(e.previousHash!==prev)return false;
+    if(await computeEntryHash(e,prev)!==e.entryHash)return false;
+  }return true;
+}
 
-      let total = 0;
-      let verifiedCount = 0;
-      let pendingCount = 0;
+async function runIntegrityCheck(){
+  const c=document.getElementById('verifyResult');
+  if(!c){await renderDashboard();return}
+  if(entries.length===0){c.innerHTML='<p style="text-align:center;color:var(--text2)">No entries.</p>';return}
+  c.innerHTML='<p style="text-align:center">⏳ Verifying...</p>';
+  let res=[],ok=true;
+  for(let i=0;i<entries.length;i++){
+    const e=entries[i],prev=i===0?'0'.repeat(64):entries[i-1].entryHash;
+    const chainOk=e.previousHash===prev,hashOk=await computeEntryHash(e,prev)===e.entryHash,v=chainOk&&hashOk;
+    if(!v)ok=false;res.push({e,v});
+  }
+  let h=`<div style="padding:16px;border-radius:8px;margin-bottom:16px;text-align:center;${ok?'background:#dcfce7':'background:#fee2e2'}"><div style="font-size:1.5rem">${ok?'✅':'🚨'}</div><div style="font-weight:700">${ok?'All verified! Chain intact.':'INTEGRITY VIOLATION!'}</div><div style="font-size:.85rem;color:var(--text2)">${entries.length} checked</div></div>`;
+  res.forEach(r=>{h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid var(--border);font-size:.85rem"><span>${r.v?'✅':'❌'}</span><strong>#${r.e.entryNumber}</strong><span style="color:var(--text2)">₹${r.e.amount.toLocaleString('en-IN')} by ${esc(r.e.addedBy)}</span>${!r.v?'<span style="color:var(--danger);font-weight:600">TAMPERED</span>':''}</div>`});
+  c.innerHTML=h;
+}
 
-      if (ledger.length === 0) {
-        container.innerHTML = `<div class="card" style="text-align:center; color:var(--text-muted);">No transactions recorded yet. Click "Add Entry" to create the first record.</div>`;
-      }
+function esc(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function showToast(m,err=false){const t=document.getElementById('toast');t.textContent=m;t.style.background=err?'var(--danger)':'#1e293b';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
 
-      // Render reverse chronological
-      [...ledger].reverse().forEach(item => {
-        total += item.amount;
-        if (item.validation.status === 'VERIFIED') verifiedCount++;
-        if (item.validation.status === 'PENDING') pendingCount++;
-
-        let statusClass = 'status-pending';
-        if (item.validation.status === 'VERIFIED') statusClass = 'status-verified';
-        if (item.validation.status === 'DISPUTED') statusClass = 'status-disputed';
-
-        const isCreator = item.creator === currentUser;
-
-        const card = document.createElement('div');
-        card.className = 'card entry-card';
-        card.innerHTML = `
-          <div class="entry-header">
-            <div>
-              <span class="entry-amount">₹${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-              <span style="font-weight:600; margin-left:0.5rem;">${item.category}</span>
-            </div>
-            <span class="status-badge ${statusClass}">${item.validation.status}</span>
-          </div>
-
-          <div class="entry-meta">
-            👤 Added by: <strong>${item.creator}</strong> | 📅 ${new Date(item.timestamp).toLocaleString()}
-          </div>
-
-          <div class="entry-details">
-            <strong>Reason:</strong> ${escapeHtml(item.reason)}
-          </div>
-
-          <div class="entry-proof">
-            <strong>Attached Proof & Ref:</strong> ${escapeHtml(item.proofRef)}
-            ${item.proofData ? `<img src="${item.proofData}" alt="Proof receipt" />` : ''}
-          </div>
-
-          <div class="validation-box">
-            <div style="font-size:0.8rem; color:var(--text-muted);">
-              <strong>Verification Status:</strong> 
-              ${item.validation.reviewedBy ? `${item.validation.status} by <strong>${item.validation.reviewedBy}</strong> on ${new Date(item.validation.reviewedAt).toLocaleDateString()} (${escapeHtml(item.validation.reviewNotes)})` : 'Awaiting counterparty verification'}
-            </div>
-
-            ${!isCreator && item.validation.status === 'PENDING' ? `
-              <div class="validation-actions">
-                <button class="btn btn-sm btn-success" onclick="validateEntry('${item.id}', 'VERIFIED')">✅ Confirm Spent (Verified)</button>
-                <button class="btn btn-sm btn-danger" onclick="validateEntry('${item.id}', 'DISPUTED')">⚠️ Dispute Entry</button>
-              </div>
-            ` : ''}
-          </div>
-
-          <span class="hash-badge">Block SHA-256: ${item.hash}</span>
-        `;
-        container.appendChild(card);
-      });
-
-      document.getElementById('statTotal').innerText = `₹${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-      document.getElementById('statVerified').innerText = verifiedCount;
-      document.getElementById('statPending').innerText = pendingCount;
-    }
-
-    function generateSyncPayload() {
-      const payload = JSON.stringify(ledger);
-      document.getElementById('syncExportArea').value = payload;
-      navigator.clipboard.writeText(payload).then(() => {
-        alert("📋 Sync code copied to clipboard! Send this text to your partner.");
-      });
-    }
-
-    async function importSyncPayload() {
-      const code = document.getElementById('syncImportArea').value.trim();
-      if (!code) {
-        alert("Please paste the sync code first!");
-        return;
-      }
-      try {
-        const incoming = JSON.parse(code);
-        if (!Array.isArray(incoming)) throw new Error("Invalid structure");
-
-        // Merge based on transaction IDs
-        const existingMap = new Map(ledger.map(i => [i.id, i]));
-        incoming.forEach(entry => {
-          if (!existingMap.has(entry.id)) {
-            ledger.push(entry);
-          } else {
-            // Update validation status if partner reviewed it
-            const existing = existingMap.get(entry.id);
-            if (entry.validation && entry.validation.reviewedBy) {
-              existing.validation = entry.validation;
-            }
-          }
-        });
-
-        // Re-sort chronologically
-        ledger.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-        localStorage.setItem('ledger_chain', JSON.stringify(ledger));
-        document.getElementById('syncImportArea').value = '';
-        renderLedger();
-        const valid = await verifyChain();
-        if (valid) {
-          alert("✅ Merged successfully! All entries verified.");
-        } else {
-          alert("⚠️ Merged data contains conflicting or tampered hashes!");
-        }
-      } catch (err) {
-        alert("❌ Failed to import: Invalid code format.");
-      }
-    }
-
-    function escapeHtml(text) {
-      if (!text) return '';
-      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-    }
-  </script>
+initApp();
+</script>
 </body>
 </html>
