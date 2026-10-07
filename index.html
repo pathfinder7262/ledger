@@ -306,6 +306,7 @@ const firebaseConfig = {
   storageBucket: "ledger-d0809.firebasestorage.app",
   messagingSenderId: "615941709103",
   appId: "1:615941709103:web:934109b703b161083595da",
+  measurementId: "G-THGVFSFLXK"
 };
 // ╔═══════════════════════════════════════════════════════════════╗
 // ║  ⛔ DO NOT EDIT ANYTHING BELOW THIS LINE                     ║
@@ -314,7 +315,7 @@ const firebaseConfig = {
 let db,ledgerRef,currentUser=null,selectedLoginUser=null,ledgerConfig=null,entries=[];
 
 function initApp(){
-  if(firebaseConfig.apiKey==="PASTE_YOUR_API_KEY"){document.getElementById('configError').style.display='flex';return}
+  if(firebaseConfig.apiKey==="AIzaSyDO-OUslBbcQX3lmuJs2-vAlp3FTZ3yFEs"){document.getElementById('configError').style.display='flex';return}
   try{firebase.initializeApp(firebaseConfig);db=firebase.database();ledgerRef=db.ref('sharedLedger');checkLedgerExists()}
   catch(e){document.getElementById('configError').style.display='flex'}
 }
