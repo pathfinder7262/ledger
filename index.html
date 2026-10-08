@@ -46,15 +46,19 @@ textarea{resize:vertical;min-height:80px}
 .entry-amount{font-size:1.2rem;font-weight:700}
 .entry-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:.8rem;color:var(--text2);margin-bottom:10px}
 .entry-reason{font-size:.9rem;margin-bottom:10px}
-.entry-proof{background:#f8fafc;padding:10px;border-radius:8px;margin-bottom:10px;font-size:.85rem}
-.entry-proof a{color:var(--primary-light);text-decoration:none;word-break:break-all}
+.entry-proof{background:#f8fafc;padding:12px;border-radius:8px;margin-bottom:10px;font-size:.85rem;border:1px solid var(--border)}
+.entry-proof .proof-title{font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.entry-proof a.proof-link{display:inline-flex;align-items:center;gap:6px;color:var(--primary-light);font-weight:600;text-decoration:none;background:#fff;padding:6px 12px;border-radius:6px;border:1px solid var(--border);margin-top:4px}
+.entry-proof a.proof-link:hover{background:#eff6ff}
+.proof-thumbnail{max-width:100%;max-height:180px;border-radius:8px;margin-top:8px;display:block;cursor:pointer;border:1px solid var(--border);transition:transform .2s;object-fit:cover}
+.proof-thumbnail:hover{transform:scale(1.02)}
 .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:600}
 .badge-pending{background:#fef3c7;color:#92400e}.badge-verified{background:#dcfce7;color:#166534}.badge-disputed{background:#fee2e2;color:#991b1b}
 .validation-section{margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
 .entry-hash{font-size:.7rem;color:var(--text2);margin-top:8px;word-break:break-all;font-family:'Courier New',monospace;background:#f1f5f9;padding:6px 8px;border-radius:4px}
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.show{display:flex}
-.modal{background:var(--card);border-radius:var(--radius);padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+.modal{background:var(--card);border-radius:var(--radius);padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
 .modal h3{margin-bottom:16px}
 .modal-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
 .center-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
@@ -76,8 +80,17 @@ textarea{resize:vertical;min-height:80px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(10px);background:#1e293b;color:#fff;padding:12px 24px;border-radius:8px;font-size:.9rem;z-index:300;opacity:0;transition:.3s;box-shadow:0 4px 12px rgba(0,0,0,.2);white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .logout-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;padding:4px 12px;border-radius:6px;font-size:.8rem;cursor:pointer}
+.logout-btn:hover{background:rgba(255,255,255,.2)}
 .filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .filter-row select{flex:1;min-width:120px}
+.proof-choice-tabs{display:flex;gap:8px;margin-bottom:12px}
+.choice-btn{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;background:#f8fafc;font-size:.85rem;font-weight:600;cursor:pointer;text-align:center}
+.choice-btn.active{background:#eff6ff;border-color:var(--primary);color:var(--primary)}
+.preview-box{margin-top:10px;text-align:center;display:none}
+.preview-box img{max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.lightbox{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:300;align-items:center;justify-content:center;padding:20px;cursor:pointer}
+.lightbox.show{display:flex}
+.lightbox img{max-width:95vw;max-height:90vh;border-radius:8px;box-shadow:0 0 20px rgba(0,0,0,.5);object-fit:contain}
 @media(max-width:600px){
 header h1{font-size:1rem}
 .stats-grid{grid-template-columns:repeat(2,1fr)}
@@ -159,9 +172,31 @@ main{padding:12px}
 <div class="form-group"><label class="required">Amount (₹)</label><input type="number" id="entryAmount" step="0.01" min="0.01" placeholder="e.g. 1500.00" required></div>
 <div class="form-group"><label class="required">Reason / Description</label><textarea id="entryReason" placeholder="Clearly describe what this expense was for..." required></textarea><div class="hint">Be specific — vague entries may be disputed</div></div>
 <div class="form-group"><label class="required">Category</label><select id="entryCategory" required><option value="">Select category...</option><option value="Food & Grocery">🍕 Food & Grocery</option><option value="Transport">🚗 Transport</option><option value="Utilities & Bills">💡 Utilities & Bills</option><option value="Rent & Housing">🏠 Rent & Housing</option><option value="Medical">🏥 Medical</option><option value="Shopping">🛒 Shopping</option><option value="Entertainment">🎬 Entertainment</option><option value="Education">📚 Education</option><option value="Loan / Lending">💰 Loan / Lending</option><option value="Repayment">🔄 Repayment</option><option value="Other">📦 Other</option></select></div>
-<div class="form-group"><label class="required">Proof Type</label><select id="entryProofType" required><option value="">Select proof type...</option><option value="Receipt Photo">📸 Receipt Photo</option><option value="Bank Statement">🏦 Bank Statement Screenshot</option><option value="Invoice">📄 Invoice</option><option value="UPI/Payment Screenshot">📱 UPI/Payment Screenshot</option><option value="Bill">🧾 Bill</option><option value="Other Document">📎 Other Document</option></select></div>
-<div class="form-group"><label class="required">Proof Link / URL</label><input type="url" id="entryProofLink" placeholder="https://drive.google.com... or any image link" required><div class="hint">Upload receipt to Google Drive / Photos, set "Anyone with link", paste URL</div></div>
-<div class="form-group"><label class="required">Proof Description</label><textarea id="entryProofDesc" placeholder="Describe what the proof shows (e.g. 'UPI screenshot showing ₹1500 to BigBazaar, txn ref XXX')" required></textarea></div>
+
+<div class="form-group">
+<label class="required">Proof Document / Receipt</label>
+<div class="proof-choice-tabs">
+  <div class="choice-btn active" id="btnUploadChoice" onclick="setProofMode('upload')">📸 Upload Photo / File</div>
+  <div class="choice-btn" id="btnUrlChoice" onclick="setProofMode('url')">🔗 Paste Web Link</div>
+</div>
+
+<div id="proofUploadSection">
+  <input type="file" id="entryFile" accept="image/*,application/pdf" onchange="handleFileSelected(event)">
+  <div class="hint">Upload bill photo, screenshot, or receipt. Compressed automatically.</div>
+  <div class="preview-box" id="imagePreviewBox">
+    <img id="imagePreviewImg" alt="Preview">
+    <div style="font-size:.75rem;color:var(--text2);margin-top:4px" id="previewSizeInfo"></div>
+  </div>
+</div>
+
+<div id="proofUrlSection" style="display:none">
+  <input type="url" id="entryProofLink" placeholder="https://drive.google.com/... or cloud link">
+  <div class="hint">Paste public link to Google Drive, Dropbox, or receipt URL.</div>
+</div>
+</div>
+
+<div class="form-group"><label class="required">Proof Type Label</label><select id="entryProofType" required><option value="Receipt Photo">📸 Receipt Photo</option><option value="Bank Statement">🏦 Bank Statement Screenshot</option><option value="Invoice">📄 Invoice</option><option value="UPI/Payment Screenshot">📱 UPI/Payment Screenshot</option><option value="Bill">🧾 Bill</option><option value="Other Document">📎 Other Document</option></select></div>
+<div class="form-group"><label class="required">Proof Description & Reference</label><textarea id="entryProofDesc" placeholder="e.g. 'UPI ref #928374829 paid to vendor, bill dated 08-Oct-2026'" required></textarea></div>
 <button type="submit" class="btn btn-primary btn-block" id="submitBtn" style="margin-top:8px">🔒 Submit Permanent Entry</button>
 </form>
 </div>
@@ -191,7 +226,7 @@ main{padding:12px}
 <li><strong>Every entry gets a SHA-256 hash</strong> from its content + previous hash</li>
 <li><strong>Entries are chained</strong> — modifying any past entry breaks all hashes after it</li>
 <li><strong>Data stored in Firebase cloud</strong> — not in your browser</li>
-<li><strong>Auto-sync every 5 seconds</strong> — both users see updates</li>
+<li><strong>Auto-sync every 5 seconds</strong> — both users see updates live</li>
 <li><strong>PIN-protected</strong> — nobody can impersonate you</li>
 <li><strong>No delete function exists</strong> — entries are permanent</li>
 </ul>
@@ -200,6 +235,12 @@ main{padding:12px}
 </main>
 </div>
 
+<!-- Lightbox Modal for Full Image View -->
+<div id="lightboxModal" class="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="Enlarged Receipt">
+</div>
+
+<!-- Validation Modal -->
 <div id="validateModal" class="modal-overlay">
 <div class="modal">
 <h3>Validate Entry #<span id="valEntryNum"></span></h3>
@@ -217,7 +258,7 @@ main{padding:12px}
 
 <script>
 // ╔═══════════════════════════════════════════════════════════════╗
-// ║  YOUR FIREBASE DATABASE URL — ALREADY CONFIGURED             ║
+// ║  YOUR FIREBASE DATABASE URL — PRE-CONFIGURED                 ║
 // ╚═══════════════════════════════════════════════════════════════╝
 var DB = "https://ledger-d0809-default-rtdb.firebaseio.com";
 
@@ -227,6 +268,82 @@ var selectedLoginUser = null;
 var ledgerConfig = null;
 var entries = [];
 var pollTimer = null;
+var proofMode = 'upload'; // 'upload' or 'url'
+var currentCompressedImageData = '';
+
+// =================== PROOF UPLOAD / COMPRESS ===================
+function setProofMode(mode) {
+  proofMode = mode;
+  document.getElementById('btnUploadChoice').className = 'choice-btn' + (mode==='upload'?' active':'');
+  document.getElementById('btnUrlChoice').className = 'choice-btn' + (mode==='url'?' active':'');
+  document.getElementById('proofUploadSection').style.display = mode==='upload' ? 'block' : 'none';
+  document.getElementById('proofUrlSection').style.display = mode==='url' ? 'block' : 'none';
+}
+
+function handleFileSelected(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    // Non-image files like PDF: read raw base64
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      currentCompressedImageData = e.target.result;
+      document.getElementById('imagePreviewBox').style.display = 'block';
+      document.getElementById('imagePreviewImg').style.display = 'none';
+      document.getElementById('previewSizeInfo').textContent = '📄 Attached Document: ' + file.name;
+    };
+    reader.readAsDataURL(file);
+    return;
+  }
+
+  // Compress Image to max 900px, 70% quality JPEG
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var maxDim = 900;
+      var width = img.width;
+      var height = img.height;
+
+      if (width > height) {
+        if (width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        }
+      } else {
+        if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      currentCompressedImageData = canvas.toDataURL('image/jpeg', 0.7);
+      document.getElementById('imagePreviewImg').src = currentCompressedImageData;
+      document.getElementById('imagePreviewImg').style.display = 'inline-block';
+      document.getElementById('imagePreviewBox').style.display = 'block';
+      var kb = Math.round(currentCompressedImageData.length * 0.75 / 1024);
+      document.getElementById('previewSizeInfo').textContent = '📸 Compressed: ' + width + '×' + height + 'px (~' + kb + ' KB)';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightboxModal').classList.add('show');
+}
+function closeLightbox() {
+  document.getElementById('lightboxModal').classList.remove('show');
+  document.getElementById('lightboxImg').src = '';
+}
 
 // =================== FIREBASE REST HELPERS ===================
 async function fbGet(path) {
@@ -247,7 +364,8 @@ async function sha256(msg) {
   return Array.from(new Uint8Array(hash)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
 }
 async function computeEntryHash(e, prev) {
-  return await sha256(prev+'|'+e.id+'|'+e.entryNumber+'|'+e.timestamp+'|'+e.addedBy+'|'+e.amount+'|'+e.reason+'|'+e.category+'|'+e.proofType+'|'+e.proofLink+'|'+e.proofDesc);
+  var proofId = (e.proofLink && e.proofLink.startsWith('data:')) ? e.proofLink.substring(0, 60) + '...' + e.proofLink.length : e.proofLink;
+  return await sha256(prev+'|'+e.id+'|'+e.entryNumber+'|'+e.timestamp+'|'+e.addedBy+'|'+e.amount+'|'+e.reason+'|'+e.category+'|'+e.proofType+'|'+proofId+'|'+e.proofDesc);
 }
 
 // =================== INIT ===================
@@ -383,9 +501,29 @@ async function addEntry(e) {
     var reason = document.getElementById('entryReason').value.trim();
     var category = document.getElementById('entryCategory').value;
     var proofType = document.getElementById('entryProofType').value;
-    var proofLink = document.getElementById('entryProofLink').value.trim();
     var proofDesc = document.getElementById('entryProofDesc').value.trim();
-    if (!amount||!reason||!category||!proofType||!proofLink||!proofDesc) { showToast('All fields required!',true); return; }
+
+    var finalProof = '';
+    if (proofMode === 'upload') {
+      if (!currentCompressedImageData) {
+        showToast('Please upload a proof file or photo!', true);
+        return;
+      }
+      finalProof = currentCompressedImageData;
+    } else {
+      var urlInput = document.getElementById('entryProofLink').value.trim();
+      if (!urlInput) {
+        showToast('Please enter a valid proof link!', true);
+        return;
+      }
+      finalProof = urlInput;
+    }
+
+    if (!amount || !reason || !category || !proofType || !finalProof || !proofDesc) {
+      showToast('All fields required!', true);
+      return;
+    }
+
     var prevHash = entries.length>0 ? entries[entries.length-1].entryHash : '0000000000000000000000000000000000000000000000000000000000000000';
     var entry = {
       id: Date.now().toString(36)+Math.random().toString(36).substr(2,8),
@@ -393,13 +531,16 @@ async function addEntry(e) {
       timestamp: new Date().toISOString(),
       addedBy: currentUser,
       amount: amount, reason: reason, category: category,
-      proofType: proofType, proofLink: proofLink, proofDesc: proofDesc,
+      proofType: proofType, proofLink: finalProof, proofDesc: proofDesc,
       validationStatus: 'Pending', validatedBy: null, validationNotes: '', validationTimestamp: null,
       previousHash: prevHash, entryHash: ''
     };
     entry.entryHash = await computeEntryHash(entry, prevHash);
     await fbSet('sharedLedger/entries/'+entries.length, entry);
+
     document.getElementById('entryForm').reset();
+    currentCompressedImageData = '';
+    document.getElementById('imagePreviewBox').style.display = 'none';
     showToast('Entry #'+entry.entryNumber+' added to cloud!');
     await loadEntries();
     switchTab('ledger');
@@ -442,6 +583,24 @@ function renderLedger() {
   document.getElementById('ledgerEntries').innerHTML = f.length===0 ? '<div class="empty-state"><div class="icon">📭</div><p>No entries match.</p></div>' : f.map(function(e){return renderEntryCard(e,true)}).join('');
 }
 
+function renderProofHtml(proofType, proofLink, proofDesc) {
+  var isImg = proofLink && (proofLink.startsWith('data:image/') || /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(proofLink));
+  var content = '';
+  if (isImg) {
+    content = '<div style="margin-top:4px"><img class="proof-thumbnail" src="'+proofLink+'" alt="Receipt Proof" onclick="openLightbox(this.src)" title="Click to enlarge photo"></div>';
+  } else if (proofLink && proofLink.startsWith('data:application/pdf')) {
+    content = '<div style="margin-top:4px"><a class="proof-link" href="'+proofLink+'" target="_blank" download="proof.pdf">📄 Open Attached PDF Document</a></div>';
+  } else if (proofLink) {
+    content = '<div style="margin-top:4px"><a class="proof-link" href="'+esc(proofLink)+'" target="_blank" rel="noopener">🔗 View Proof Link / Document</a></div>';
+  }
+
+  return '<div class="entry-proof">'
+       + '<div class="proof-title">📎 ' + esc(proofType) + '</div>'
+       + content
+       + (proofDesc ? '<div style="margin-top:6px;color:var(--text2);font-size:.8rem"><strong>Reference:</strong> ' + esc(proofDesc) + '</div>' : '')
+       + '</div>';
+}
+
 function renderEntryCard(entry, showVal) {
   var sc=entry.validationStatus.toLowerCase();
   var ts=new Date(entry.timestamp);
@@ -453,7 +612,16 @@ function renderEntryCard(entry, showVal) {
     vh='<div class="validation-section"><strong>'+(entry.validationStatus==='Verified'?'✅':'❌')+' '+entry.validationStatus+'</strong> by '+esc(entry.validatedBy)+'<div style="font-size:.85rem;color:var(--text2)">'+esc(entry.validationNotes)+'</div>'+(entry.validationTimestamp?'<div style="font-size:.75rem;color:var(--text2)">'+new Date(entry.validationTimestamp).toLocaleString('en-IN')+'</div>':'')+'</div>';
   }
   var idx = entries.indexOf(entry);
-  return '<div class="entry-card '+sc+'"><div class="entry-header"><div><span class="entry-number">#'+entry.entryNumber+'</span> <span class="badge badge-'+sc+'">'+entry.validationStatus+'</span></div><div class="entry-amount">₹'+entry.amount.toLocaleString('en-IN')+'</div></div><div class="entry-meta"><span>👤 '+esc(entry.addedBy)+'</span><span>📅 '+d+' '+t+'</span><span>🏷️ '+esc(entry.category)+'</span></div><div class="entry-reason">'+esc(entry.reason)+'</div><div class="entry-proof"><strong>'+esc(entry.proofType)+':</strong> <a href="'+esc(entry.proofLink)+'" target="_blank" rel="noopener">'+esc(entry.proofLink)+'</a><div style="margin-top:4px;color:var(--text2)">'+esc(entry.proofDesc)+'</div></div>'+(canVal?'<button class="btn btn-outline btn-sm" onclick="openValidation('+idx+')">🔍 Validate</button>':'')+vh+'<div class="entry-hash">🔗 '+entry.entryHash+'</div></div>';
+  var proofHtml = renderProofHtml(entry.proofType, entry.proofLink, entry.proofDesc);
+
+  return '<div class="entry-card '+sc+'">'
+       + '<div class="entry-header"><div><span class="entry-number">#'+entry.entryNumber+'</span> <span class="badge badge-'+sc+'">'+entry.validationStatus+'</span></div><div class="entry-amount">₹'+entry.amount.toLocaleString('en-IN')+'</div></div>'
+       + '<div class="entry-meta"><span>👤 '+esc(entry.addedBy)+'</span><span>📅 '+d+' '+t+'</span><span>🏷️ '+esc(entry.category)+'</span></div>'
+       + '<div class="entry-reason">'+esc(entry.reason)+'</div>'
+       + proofHtml
+       + (canVal?'<button class="btn btn-outline btn-sm" onclick="openValidation('+idx+')">🔍 Validate</button>':'')+vh
+       + '<div class="entry-hash">🔗 '+entry.entryHash+'</div>'
+       + '</div>';
 }
 
 function populateFilters() {
@@ -468,7 +636,16 @@ function openValidation(idx) {
   var e=entries[idx]; if(!e) return;
   currentValIndex=idx;
   document.getElementById('valEntryNum').textContent=e.entryNumber;
-  document.getElementById('valEntryDetails').innerHTML='<p><strong>Amount:</strong> ₹'+e.amount.toLocaleString('en-IN')+'</p><p><strong>By:</strong> '+esc(e.addedBy)+' on '+new Date(e.timestamp).toLocaleString('en-IN')+'</p><p><strong>Reason:</strong> '+esc(e.reason)+'</p><p><strong>Proof:</strong> <a href="'+esc(e.proofLink)+'" target="_blank">'+esc(e.proofType)+'</a> — '+esc(e.proofDesc)+'</p>';
+  var proofPreview = (e.proofLink && e.proofLink.startsWith('data:image/'))
+    ? '<div style="margin-top:6px"><img src="'+e.proofLink+'" style="max-height:120px;border-radius:6px;border:1px solid var(--border)"></div>'
+    : '<div style="margin-top:4px"><a href="'+esc(e.proofLink)+'" target="_blank">View Proof</a></div>';
+
+  document.getElementById('valEntryDetails').innerHTML=
+    '<p><strong>Amount:</strong> ₹'+e.amount.toLocaleString('en-IN')+'</p>'
+    + '<p><strong>By:</strong> '+esc(e.addedBy)+' on '+new Date(e.timestamp).toLocaleString('en-IN')+'</p>'
+    + '<p><strong>Reason:</strong> '+esc(e.reason)+'</p>'
+    + '<div style="margin-top:8px"><strong>Proof Attached:</strong> ' + proofPreview + '</div>';
+
   document.getElementById('valNotes').value='';
   document.getElementById('validateModal').classList.add('show');
 }
